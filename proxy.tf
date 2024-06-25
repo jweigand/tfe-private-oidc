@@ -30,9 +30,11 @@ resource "aws_instance" "proxy" {
   iam_instance_profile        = aws_iam_instance_profile.proxy.name
   subnet_id                   = var.proxy_subnet_id
   #vpc_security_group_ids = []
+  user_data_replace_on_change = true
+  user_data                   = file("${path.module}/proxy-user-data.sh")
 
   tags = {
-    Name = "Jump"
+    Name = "proxy"
   }
 }
 
