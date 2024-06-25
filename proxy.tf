@@ -54,8 +54,8 @@ resource "aws_security_group" "proxy" {
 
 resource "aws_security_group_rule" "proxy_ingress" {
   type              = "ingress"
-  from_port         = 8188
-  to_port           = 8188
+  from_port         = 8118
+  to_port           = 8118
   protocol          = "tcp"
   security_group_id = aws_security_group.proxy.id
   cidr_blocks       = [data.aws_vpc.this.cidr_block]
