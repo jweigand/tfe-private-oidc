@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-apt-get install privoxy -y
+sudo apt-get update
+sudo apt-get install privoxy -y
