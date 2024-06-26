@@ -53,14 +53,14 @@ resource "aws_lb_listener_rule" "jwks" {
 }
 
 data "aws_autoscaling_group" "tfe" {
-  name = var.tfe_name
+  name = "tfe-${var.tfe_name}-asg"
 }
 
 resource "aws_lb_target_group" "tfe" {
   name     = "tfe-alb"
   port     = 443
   protocol = "HTTPS"
-  vpc_id   = data.aws_vpc.this
+  vpc_id   = data.aws_vpc.this.id
 }
 
 resource "aws_autoscaling_attachment" "tfe" {
