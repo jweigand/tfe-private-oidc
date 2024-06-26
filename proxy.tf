@@ -61,6 +61,15 @@ resource "aws_security_group_rule" "proxy_ingress" {
   cidr_blocks       = [data.aws_vpc.this.cidr_block]
 }
 
+resource "aws_security_group_rule" "nlb_to_proxy_ingress" {
+  type                     = "ingress"
+  from_port                = 8118
+  to_port                  = 8118
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.proxy.id
+  source_security_group_id = aws_security_group.nlb.id
+}
+
 resource "aws_security_group_rule" "proxy_egress" {
   type              = "egress"
   from_port         = 0
@@ -74,3 +83,4 @@ variable "proxy_subnet_id" {
   type    = string
   default = "subnet-048e666f6841f2475"
 }
+
