@@ -44,13 +44,27 @@ resource "aws_security_group" "nlb" {
   vpc_id      = data.aws_vpc.this.id
 }
 
+data "aws_nat_gateways" "this" {
+  vpc_id = data.aws_vpc.this.id
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}
+
+data "aws_nat_gateway" "this" {
+  count = length(data.aws_nat_gateways.this.ids)
+  id    = tolist(data.aws_nat_gateways.this.ids)[count.index]
+}
+
 resource "aws_security_group_rule" "nlb_proxy_ingress" {
   type              = "ingress"
   from_port         = 8118
   to_port           = 8118
   protocol          = "tcp"
   security_group_id = aws_security_group.nlb.id
-  cidr_blocks       = [data.aws_vpc.this.cidr_block]
+  cidr_blocks       = [for ip in data.aws_nat_gateway.this.*.public_ip : format("%s/32", ip)]
 }
 
 resource "aws_security_group_rule" "nlb_egress" {
