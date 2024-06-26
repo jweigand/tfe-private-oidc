@@ -1,4 +1,4 @@
-/*
+
 
 variable "hosted_zone" {
   default = "john-weigand.sbx.hashidemos.io"
@@ -11,7 +11,7 @@ data "aws_route53_zone" "this" {
 
 resource "aws_route53_record" "tfe" {
   zone_id = data.aws_route53_zone.this.zone_id
-  name    = "tfe"
+  name    = "tfe-public"
   type    = "A"
 
   alias {
@@ -51,5 +51,3 @@ resource "aws_acm_certificate_validation" "tfe" {
   certificate_arn         = aws_acm_certificate.tfe.arn
   validation_record_fqdns = [for record in aws_route53_record.cert : record.fqdn]
 }
-
-*/
