@@ -27,7 +27,7 @@ resource "aws_lb_listener" "https" {
 }
 
 resource "aws_lb_listener_rule" "oidc" {
-  listener_arn = aws_lb.alb.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = 10
   action {
     type             = "forward"
@@ -41,7 +41,7 @@ resource "aws_lb_listener_rule" "oidc" {
 }
 
 resource "aws_lb_listener_rule" "jwks" {
-  listener_arn = aws_lb.alb.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = 10
   action {
     type             = "forward"
