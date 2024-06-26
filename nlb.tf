@@ -76,23 +76,4 @@ resource "aws_security_group_rule" "nlb_egress" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-variable "hosted_zone" {
-  default = "john-weigand.sbx.hashidemos.io"
-}
 
-data "aws_route53_zone" "this" {
-  name         = var.hosted_zone
-  private_zone = false
-}
-
-resource "aws_route53_record" "tfe" {
-  zone_id = data.aws_route53_zone.this.zone_id
-  name    = "tfe"
-  type    = "A"
-
-  alias {
-    name                   = aws_lb.tfe_nlb.dns_name
-    zone_id                = aws_lb.tfe_nlb.zone_id
-    evaluate_target_health = false
-  }
-}
