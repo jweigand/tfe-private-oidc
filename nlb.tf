@@ -8,6 +8,7 @@ resource "aws_lb" "tfe_nlb" {
   internal           = false
   load_balancer_type = "network"
   subnets            = var.public_subnet_ids
+  security_groups    = [aws_security_group.nlb.id]
 
   tags = {
     Name = "tfe-nlb"
