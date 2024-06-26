@@ -42,7 +42,7 @@ resource "aws_lb_listener_rule" "oidc" {
 
 resource "aws_lb_listener_rule" "jwks" {
   listener_arn = aws_lb_listener.https.arn
-  priority     = 10
+  priority     = 11
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.tfe.arn
