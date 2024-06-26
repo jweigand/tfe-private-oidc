@@ -9,7 +9,7 @@ data "aws_route53_zone" "this" {
 
 resource "aws_route53_record" "tfe" {
   zone_id = data.aws_route53_zone.this.zone_id
-  name    = "tfe"
+  name    = "tfe-public"
   type    = "A"
 
   alias {
