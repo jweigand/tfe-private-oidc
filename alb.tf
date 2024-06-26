@@ -63,6 +63,11 @@ resource "aws_lb_target_group" "tfe" {
   port     = 443
   protocol = "HTTPS"
   vpc_id   = data.aws_vpc.this.id
+
+  health_check {
+    path = "/_health_check"
+    port = "443"
+  }
 }
 
 resource "aws_autoscaling_attachment" "tfe" {
