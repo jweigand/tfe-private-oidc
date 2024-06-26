@@ -39,6 +39,7 @@ resource "aws_lb_listener" "proxy" {
   }
 }
 
+/*
 resource "aws_lb_listener" "nlb_https" {
   load_balancer_arn = aws_lb.tfe_nlb.arn
   port              = "443"
@@ -69,6 +70,7 @@ resource "aws_lb_target_group_attachment" "alb" {
   target_id        = aws_lb.alb.arn
   port             = 443
 }
+*/
 
 resource "aws_security_group" "nlb" {
   name_prefix = "tfe_nlb"

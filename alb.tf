@@ -1,4 +1,4 @@
-resource "aws_lb" "alb" {
+/*resource "aws_lb" "alb" {
   name               = "tfe-alb"
   internal           = false
   load_balancer_type = "application"
@@ -103,3 +103,5 @@ variable "tfe_name" {
   type    = string
   default = "evolving-beetle"
 }
+
+*/
