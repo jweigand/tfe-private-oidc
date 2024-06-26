@@ -65,8 +65,9 @@ resource "aws_lb_target_group" "tfe" {
   vpc_id   = data.aws_vpc.this.id
 
   health_check {
-    path = "/_health_check"
-    port = "443"
+    path     = "/_health_check"
+    port     = "443"
+    protocol = "HTTPS"
   }
 }
 
