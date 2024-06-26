@@ -42,7 +42,8 @@ resource "aws_lb_listener" "proxy" {
 resource "aws_lb_listener" "nlb_https" {
   load_balancer_arn = aws_lb.tfe_nlb.arn
   port              = "443"
-  protocol          = "HTTPS"
+  protocol          = "TLS"
+  certificate_arn   = aws_acm_certificate.tfe.arn
 
   default_action {
     type             = "forward"
