@@ -13,3 +13,13 @@ resource "aws_vpc_endpoint" "api" {
 resource "aws_security_group" "api_endpoint" {
   vpc_id = data.aws_vpc.this.id
 }
+
+data "aws_network_interface" "api" {
+  for_each = toset(aws_vpc_endpoint.api.network_interface_ids)
+  id       = each.value
+}
+
+output "endpoint_ips" {
+  value = [for eni in data.aws_network_interface.api : eni.private_ip]
+
+}
