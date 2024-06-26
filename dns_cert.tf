@@ -19,6 +19,7 @@ resource "aws_route53_record" "tfe" {
   }
 }
 
+
 resource "aws_acm_certificate" "tfe" {
   domain_name       = aws_route53_record.tfe.fqdn
   validation_method = "DNS"
@@ -27,7 +28,16 @@ resource "aws_acm_certificate" "tfe" {
   }
 }
 
+resource "aws_route53_record" "cert_validation" {
+  allow_overwrite = true
+  name            = tolist(aws_acm_certificate.tfee.domain_validation_options)[0].resource_record_name
+  records         = [tolist(aws_acm_certificate.tfe.domain_validation_options)[0].resource_record_value]
+  type            = tolist(aws_acm_certificate.tfe.domain_validation_options)[0].resource_record_type
+  zone_id         = aws_lb.tfe_nlb.zone_id
+  ttl             = 60
+}
+
 resource "aws_acm_certificate_validation" "tfe" {
   certificate_arn         = aws_acm_certificate.tfe.arn
-  validation_record_fqdns = [aws_route53_record.tfe.fqdn]
+  validation_record_fqdns = [aws_route53_record.cert_validation.fqdn]
 }
