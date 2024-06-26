@@ -58,8 +58,9 @@ resource "aws_lb_target_group" "alb" {
   target_type = "alb"
 
   health_check {
-    port = 443
-    path = "/.well-known/openid-configuration"
+    port     = 443
+    path     = "/"
+    protocol = "HTTPS"
   }
 }
 
