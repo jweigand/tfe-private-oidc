@@ -56,6 +56,11 @@ resource "aws_lb_target_group" "alb" {
   protocol    = "TCP"
   vpc_id      = data.aws_vpc.this.id
   target_type = "alb"
+
+  health_check {
+    port = 443
+    path = "/.well-known/openid-configuration"
+  }
 }
 
 resource "aws_lb_target_group_attachment" "alb" {
