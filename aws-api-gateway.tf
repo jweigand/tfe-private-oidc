@@ -1,5 +1,5 @@
 #credit to Lucy Davinhart for the original API gateway code for Vault (https://github.com/hashi-strawb/tf-vault-aws-plugin-wif/), and to Huseyin Unal for adapting it for TFE
-
+/*
 locals {
   custom_domain = "tfe.${var.hosted_zone}"
 }
@@ -165,3 +165,4 @@ output "proxy_url" {
   description = "API Gateway Domain URL (self-signed certificate)"
   value       = "https://${local.custom_domain}/.well-known/openid-configuration"
 }
+*/
