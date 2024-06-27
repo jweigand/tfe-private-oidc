@@ -100,6 +100,15 @@ resource "aws_security_group_rule" "nlb_proxy_ingress" {
   cidr_blocks       = [for ip in data.aws_nat_gateway.this.*.public_ip : format("%s/32", ip)]
 }
 
+resource "aws_security_group_rule" "nlb_https_ingress" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nlb.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
 resource "aws_security_group_rule" "nlb_egress" {
   type              = "egress"
   from_port         = 0
