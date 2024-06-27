@@ -48,6 +48,7 @@ resource "aws_lb_listener" "nlb_https" {
   load_balancer_arn = aws_lb.tfe_nlb.arn
   port              = "443"
   protocol          = "TCP"
+  certificate_arn   = aws_acm_certificate.example.arn
 
   default_action {
     type             = "forward"
