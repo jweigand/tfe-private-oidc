@@ -58,12 +58,11 @@ resource "aws_lb_target_group" "vpc_endpoint" {
   port        = 443
   protocol    = "TCP"
   vpc_id      = data.aws_vpc.this.id
-  target_type = "alb"
+  target_type = "ip"
 
   health_check {
     port     = 443
-    path     = "/"
-    protocol = "HTTPS"
+    protocol = "TCP"
   }
 }
 
