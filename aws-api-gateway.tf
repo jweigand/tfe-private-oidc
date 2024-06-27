@@ -1,6 +1,6 @@
 #credit to Lucy Davinhart for the original API gateway code for Vault (https://github.com/hashi-strawb/tf-vault-aws-plugin-wif/), and to Huseyin Unal for adapting it for TFE
 
-/*
+
 
 locals {
   custom_domain = "tfe.${var.hosted_zone}"
@@ -112,6 +112,8 @@ resource "aws_acm_certificate_validation" "example" {
 # Custom Domain
 #
 
+
+
 resource "aws_api_gateway_domain_name" "example" {
   domain_name              = aws_acm_certificate.example.domain_name
   regional_certificate_arn = aws_acm_certificate_validation.example.certificate_arn
@@ -134,8 +136,8 @@ resource "aws_route53_record" "domain" {
   # allow_overwrite = true
 
   alias {
-    name                   = aws_api_gateway_domain_name.example.regional_domain_name
-    zone_id                = aws_api_gateway_domain_name.example.regional_zone_id
+    name                   = aws_lb.tfe_nlb.dns_name
+    zone_id                = aws_lb.tfe_nlb.zone_id
     evaluate_target_health = true
   }
 }
@@ -165,5 +167,3 @@ output "proxy_url" {
   description = "API Gateway Domain URL (self-signed certificate)"
   value       = "https://${local.custom_domain}/.well-known/openid-configuration"
 }
-
-*/
