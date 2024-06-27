@@ -3,6 +3,10 @@ variable "public_subnet_ids" {
   default = ["subnet-07c7255688883867d", "subnet-097b378990b1b72d1", "subnet-0c5f47eef00a4ed91"]
 }
 
+variable "hosted_zone" {
+  default = "john-weigand.sbx.hashidemos.io"
+}
+
 resource "aws_lb" "tfe_nlb" {
   name               = "tfe-nlb"
   internal           = false
@@ -39,7 +43,7 @@ resource "aws_lb_listener" "proxy" {
   }
 }
 
-
+/*
 resource "aws_lb_listener" "nlb_https" {
   load_balancer_arn = aws_lb.tfe_nlb.arn
   port              = "443"
@@ -50,6 +54,7 @@ resource "aws_lb_listener" "nlb_https" {
     target_group_arn = aws_lb_target_group.vpc_endpoint.arn
   }
 }
+*/
 
 
 
