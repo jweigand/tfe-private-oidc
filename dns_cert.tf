@@ -1,8 +1,6 @@
 
 
-variable "hosted_zone" {
-  default = "john-weigand.sbx.hashidemos.io"
-}
+
 /*
 
 data "aws_route53_zone" "this" {
