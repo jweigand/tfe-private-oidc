@@ -1,3 +1,4 @@
+/*
 resource "hcp_hvn" "this" {
   hvn_id         = "vault-private"
   cloud_provider = "aws"
@@ -56,3 +57,4 @@ resource "hcp_vault_cluster_admin_token" "this" {
 output "vault_private_endpoint_url" {
   value = hcp_vault_cluster.this.vault_private_endpoint_url
 }
+*/

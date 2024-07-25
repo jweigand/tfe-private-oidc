@@ -1,15 +1,4 @@
 
-data "vault_namespaces" "this" {}
-
-output "vault_namespaces" {
-  value = data.vault_namespaces.this
-}
-
-
-resource "vault_namespace" "this" {
-  path = "demo"
-}
-
 
 
 # https://developer.hashicorp.com/vault/docs/secrets/aws#plugin-workload-identity-federation-wif
