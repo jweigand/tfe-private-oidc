@@ -7,7 +7,7 @@ variable "vault_namespace" {
 }
 
 locals {
-  proxy_url = "https://${aws_lb.this.dns_name}:8200/v1/${var.vault_namespace}identity/oidc/plugins"
+  proxy_url = "https://${aws_route53_record.vpc_link.fqdn}/v1/${var.vault_namespace}identity/oidc/plugins"
 }
 
 
@@ -19,6 +19,7 @@ locals {
 #
 
 resource "aws_api_gateway_rest_api" "example" {
+  /*
   body = jsonencode({
     openapi = "3.0.1"
     info = {
@@ -31,10 +32,10 @@ resource "aws_api_gateway_rest_api" "example" {
           x-amazon-apigateway-integration = {
             httpMethod           = "GET"
             payloadFormatVersion = "1.0"
-            type                 = "VPC_LINK"
+            type                 = "HTTP_PROXY"
             uri                  = "${local.proxy_url}/.well-known/openid-configuration"
-            ConnectionType       = "VPC_LINK"
-            ConnectionId         = aws_api_gateway_vpc_link.this.id
+            connectionType       = "VPC_LINK"
+            connectionId         = aws_api_gateway_vpc_link.this.id
             #uri = "https://ip-ranges.amazonaws.com/ip-ranges.json"
 
           }
@@ -45,16 +46,20 @@ resource "aws_api_gateway_rest_api" "example" {
           x-amazon-apigateway-integration = {
             httpMethod           = "GET"
             payloadFormatVersion = "1.0"
-            type                 = "VPC_LINK"
+            type                 = "HTTP_PROXY"
             uri                  = "${local.proxy_url}/.well-known/keys"
-            ConnectionType       = "VPC_LINK"
-            ConnectionId         = aws_api_gateway_vpc_link.this.id
+            connectionType       = "VPC_LINK"
+            connectionId         = aws_api_gateway_vpc_link.this.id
             #uri = "https://ip-ranges.amazonaws.com/ip-ranges.json"
           }
         }
       }
     }
   })
+
+*/
+
+
 
   name = "Plugin WIF Proxy"
 
@@ -63,12 +68,116 @@ resource "aws_api_gateway_rest_api" "example" {
   }
 }
 
+
+resource "aws_api_gateway_resource" "v1" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_rest_api.example.root_resource_id
+  path_part   = "v1"
+}
+
+resource "aws_api_gateway_resource" "demos" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.v1.id
+  path_part   = "demos"
+}
+
+
+resource "aws_api_gateway_resource" "private-oidc" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.demos.id
+  path_part   = "private-oidc"
+}
+
+resource "aws_api_gateway_resource" "identity" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.private-oidc.id
+  path_part   = "identity"
+}
+
+resource "aws_api_gateway_resource" "oidc" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.identity.id
+  path_part   = "oidc"
+}
+
+resource "aws_api_gateway_resource" "plugins" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.oidc.id
+  path_part   = "plugins"
+}
+
+resource "aws_api_gateway_resource" "well-known" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.plugins.id
+  path_part   = ".well-known"
+}
+
+resource "aws_api_gateway_resource" "keys" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.well-known.id
+  path_part   = "keys"
+}
+
+resource "aws_api_gateway_method" "keys" {
+  rest_api_id   = aws_api_gateway_rest_api.example.id
+  resource_id   = aws_api_gateway_resource.keys.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_resource" "oidc-configuration" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_resource.well-known.id
+  path_part   = "openid-configuration"
+}
+
+resource "aws_api_gateway_method" "oidc" {
+  rest_api_id   = aws_api_gateway_rest_api.example.id
+  resource_id   = aws_api_gateway_resource.oidc-configuration.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "keys" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  resource_id = aws_api_gateway_resource.keys.id
+  http_method = aws_api_gateway_method.keys.http_method
+
+  type                    = "HTTP_PROXY"
+  uri                     = "${local.proxy_url}/.well-known/keys"
+  integration_http_method = "GET"
+
+  connection_type = "VPC_LINK"
+  connection_id   = aws_api_gateway_vpc_link.this.id
+}
+
+resource "aws_api_gateway_integration" "oidc" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  resource_id = aws_api_gateway_resource.oidc-configuration.id
+  http_method = aws_api_gateway_method.oidc.http_method
+
+  type                    = "HTTP_PROXY"
+  uri                     = "${local.proxy_url}/.well-known/openid-configuration"
+  integration_http_method = "GET"
+
+  connection_type = "VPC_LINK"
+  connection_id   = aws_api_gateway_vpc_link.this.id
+}
+
+
+
 resource "aws_api_gateway_deployment" "example" {
   rest_api_id = aws_api_gateway_rest_api.example.id
 
   triggers = {
     redeployment = sha1(jsonencode(aws_api_gateway_rest_api.example.body))
   }
+
+
+  depends_on = [
+    aws_api_gateway_integration.keys,
+    aws_api_gateway_integration.oidc
+  ]
 
   lifecycle {
     create_before_destroy = true
@@ -80,6 +189,7 @@ resource "aws_api_gateway_stage" "example" {
   rest_api_id   = aws_api_gateway_rest_api.example.id
   stage_name    = "v1" # TODO: Change this to something to reflext the specific Vault we're proxying
 }
+
 
 
 
@@ -145,11 +255,15 @@ resource "aws_api_gateway_domain_name" "example" {
   }
 }
 
+
+
 resource "aws_api_gateway_base_path_mapping" "example" {
   api_id      = aws_api_gateway_rest_api.example.id
   domain_name = aws_api_gateway_domain_name.example.domain_name
   stage_name  = aws_api_gateway_stage.example.stage_name
 }
+
+
 
 resource "aws_route53_record" "domain" {
   zone_id = data.aws_route53_zone.example.zone_id
@@ -176,12 +290,24 @@ variable "vpc_id" {
 }
 
 resource "aws_lb" "this" {
-  name                                                         = "vpc-link"
-  internal                                                     = false
+  name_prefix                                                  = "vpcl-"
+  internal                                                     = true
   load_balancer_type                                           = "network"
   subnets                                                      = var.public_subnet_ids
   enforce_security_group_inbound_rules_on_private_link_traffic = "off"
   security_groups                                              = [aws_security_group.nlb.id]
+}
+
+resource "aws_route53_record" "vpc_link" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "vpclink.${var.hosted_zone}"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
+    evaluate_target_health = true
+  }
 }
 
 resource "aws_lb_target_group" "this" {
@@ -223,7 +349,7 @@ resource "aws_autoscaling_attachment" "example" {
 
 resource "aws_lb_listener" "vault_api" {
   load_balancer_arn = aws_lb.this.id
-  port              = 8200
+  port              = 443
   protocol          = "TCP"
 
   default_action {
@@ -258,6 +384,8 @@ resource "aws_api_gateway_vpc_link" "this" {
 # Outputs
 #
 
+
+
 output "invoke_url" {
   value = "${aws_api_gateway_stage.example.invoke_url}/${var.vault_namespace}identity/oidc/plugins/.well-known/openid-configuration"
 }
@@ -269,3 +397,5 @@ output "proxy_url" {
   description = "API Gateway Domain URL (self-signed certificate)"
   value       = "https://${var.public_hostname}.${var.hosted_zone}/v1/${var.vault_namespace}identity/oidc/plugins/.well-known/openid-configuration"
 }
+
+
