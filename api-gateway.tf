@@ -12,7 +12,7 @@ locals {
 
 
 # Based losely on https://github.com/hashicorp/terraform-provider-aws/tree/main/examples/api-gateway-rest-api-openapi
-
+# Original credit https://github.com/hashi-strawb/tf-vault-aws-plugin-wif/blob/main/main.tf
 
 #
 # API Gateway
